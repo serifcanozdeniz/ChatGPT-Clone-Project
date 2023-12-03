@@ -5,7 +5,7 @@ const themeButton = document.querySelector("#theme-btn")
 
 let userText = null
 
-const API_KEY = "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"
+// const API_KEY = gizli tutulacak
 
 const createElement = (html, className) => {
     // yeni div oluşturma ve belirtilen chat sınıfını ekleme

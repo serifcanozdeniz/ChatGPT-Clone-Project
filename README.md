@@ -20,4 +20,4 @@ Silme butonu eklenerek daha kullanıcı dostu bir deneyim
 
 <h2> Ekran Görüntüsü </h2>
 
-![](chat.mp4)
+![](chat.gif)

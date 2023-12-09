@@ -7,7 +7,7 @@ const deleteButton = document.querySelector("#delete-btn")
 
 let userText = null
 
-const API_KEY = "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"
+//const API_KEY = "gizli kalacak"
 
 const initialHeight = chatInput.scrollHeight;
 

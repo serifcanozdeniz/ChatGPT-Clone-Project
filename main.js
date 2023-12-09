@@ -2,10 +2,36 @@ const chatInput = document.querySelector("#chat-input")
 const sendButton = document.querySelector("#send-btn")
 const chatContainer = document.querySelector(".chat-container")
 const themeButton = document.querySelector("#theme-btn")
+const headerLogo = document.querySelector(".header-logo")
+const deleteButton = document.querySelector("#delete-btn")
 
 let userText = null
 
-// const API_KEY = gizli tutulacak
+const API_KEY = "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"
+
+const initialHeight = chatInput.scrollHeight;
+
+//sayfa yüklendiğinde yerel depodan(localstorage) veri yükler
+const loadDataFromLocalStorage = () =>{
+    //tema rengini kontrol eder ve geçerli temayı uygular
+    const themeColor = localStorage.getItem("theme-color");
+    document.body.classList.toggle("light-mode", themeColor === "light_mode");
+    //tema rengini yerel depoda günceller
+    localStorage.setItem("theme-color", themeButton.innerText);
+    themeButton.innerText = document.body.classList.contains("light-mode") ? "dark_mode" : "light_mode";
+
+    //sohbet içeriğini yerel depodan alır veya varsayılan içeriği uygular
+    const defaultText = `
+    <div class="default-text">
+     <img src="/images/chat.png" height="72" width="72" style="object-fit: cover;" >
+     <h1>How can I help you today?</h1>
+
+    </div>`;
+    chatContainer.innerHTML = localStorage.getItem("all-chats") || defaultText;
+    // sayfayı sohbetin en altına kaydırır
+    chatContainer.scrollTo(0, chatContainer.scrollHeight);
+};
+loadDataFromLocalStorage();
 
 const createElement = (html, className) => {
     // yeni div oluşturma ve belirtilen chat sınıfını ekleme
@@ -38,24 +64,25 @@ const getChatResponse = async (incomingChatDiv) => {
         }),
     }
     //
-    try{
+    try {
         const response = await (await fetch(API_URL, requestOptions)).json()
         console.log(response)
-        //pElemene.textContent = response.choices[0].text.trim()
+        pElement.textContent = response.choices[0].text.trim()
 
-    } catch(error){
+    } catch (error) {
         console.log(error)
 
     }
     incomingChatDiv.querySelector(".typing-animation").remove()
     incomingChatDiv.querySelector(".chat-details").appendChild(pElement)
     chatContainer.scrollTo(0, chatContainer.scrollHeight)
+    localStorage.setItem("all-chats", chatContainer.innerHTML);
 
 }
 
-const showTypingAnimation = () => {
-    const html = `
-    <div class="chat-content">
+    const showTypingAnimation = () => {
+    const html =
+        `<div class="chat-content">
                 <div class="chat-details">
                     <img src="/images/chatbot.jpg" alt="chat-images">
                     <div class="typing-animation">
@@ -64,41 +91,60 @@ const showTypingAnimation = () => {
                         <div class="typing-dot" style="--delay: 0.4"></div>
                     </div>
                 </div>
-                <span class="material-symbols-outlined">
-                    content_copy
-                    </span>
-            </div>`
+                <span class="material-symbols-outlined">content_copy</span>
+        </div>`
 
-            const incomingChatDiv = createElement(html, "incoming")
-            chatContainer.appendChild(incomingChatDiv)
-            chatContainer.scrollTo(0, chatContainer.scrollHeight)
-            getChatResponse(incomingChatDiv)
+    const incomingChatDiv = createElement(html, "incoming")
+    chatContainer.appendChild(incomingChatDiv)
+    chatContainer.scrollTo(0, chatContainer.scrollHeight)
+    getChatResponse(incomingChatDiv)
 }
 
-const handleOutGoingChat = () =>{
+    const handleOutGoingChat = () => {
     userText = chatInput.value.trim() // chatınput değerini alır ve fazladan boşlukları siler
     if (!userText) return // chatınputun için boş ise çalışmasın
-    const html = `<div class="chat-content">
-    <div class="chat-details">
+    const html =
+    `<div class="chat-content">
+        <div class="chat-details">
         <img src="/images/serif.jpg" alt="user-images">
         <p>
             ${userText}
         </p>
-    </div>
-</div>`
+        </div>
+    </div>`
 
-const outgoingChatDiv = createElement(html,"outgoing")
-outgoingChatDiv.querySelector("p").textContent = userText
-document.querySelector(".default-text")?.remove()
-chatContainer.appendChild(outgoingChatDiv)
-chatContainer.scrollTo(0, chatContainer.scrollHeight)
-setTimeout(showTypingAnimation, 500)
+    const outgoingChatDiv = createElement(html, "outgoing")
+    outgoingChatDiv.querySelector("p").textContent = userText
+    document.querySelector(".default-text")?.remove()
+    chatContainer.appendChild(outgoingChatDiv)
+    chatContainer.scrollTo(0, chatContainer.scrollHeight)
+    setTimeout(showTypingAnimation, 500)
 }
 
 
-sendButton.addEventListener("click",handleOutGoingChat)
+sendButton.addEventListener("click", handleOutGoingChat)
 
 themeButton.addEventListener("click", () => {
-    document.body.classList.toggle("light-mode")
-   // themeButton.innerText = document.body.classList.contains("light-mode")
+    document.body.classList.toggle("light-mode");
+    localStorage.setItem("theme-color", themeButton.innerText);
+    themeButton.innerText = document.body.classList.contains("light-mode") ? "dark_mode" : "light_mode";
+});
+
+deleteButton.addEventListener("click", ()=>{
+    if(confirm("Tüm sohbetler silinecektir. Emin misiniz ?")){
+        localStorage.removeItem("all-chats");
+        loadDataFromLocalStorage();
+    }
+});
+
+chatInput.addEventListener("input", () => {
+    chatInput.style.height = `${initialHeight}px`;
+    chatInput.style.height = `${chatInput.scrollHeight}px`;
 })
+
+chatInput.addEventListener("keydown", (e) =>{
+    if(e.key === "Enter") {
+        e.preventDefault();
+        handleOutGoingChat();
+    }
+});
